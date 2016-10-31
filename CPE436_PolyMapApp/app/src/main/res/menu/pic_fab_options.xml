@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:title="Add Picture"
-        android:id="@+id/addPicOp" />
+    <item android:title="Add Picture (Gallery)"
+        android:id="@+id/addGalOp" />
+    <item android:title="Add Picture (Camera)"
+        android:id="@+id/addCamOp" />
 </menu>

@@ -1,7 +1,12 @@
 package edu.calpoly.mjew.cpe436_polymapapp;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.provider.MediaStore;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,8 +24,11 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import static android.Manifest.permission.CAMERA;
+
 public class pictureSelect extends AppCompatActivity {
 
+    private static final int REQUEST_CAMERA = 0;
     String buildingName;
     ListView buildingPics;
     ListAdapter listAd;
@@ -84,16 +92,29 @@ public class pictureSelect extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch(item.getItemId()){
-            case R.id.addPicOp:
+            case R.id.addCamOp:
 
                 Log.v("addPicOp", "need to get picture from gallery or camera");
                 //Intent pictureSelectPage = new Intent(getApplicationContext(), pictureSelect.class);
                 //pictureSelectPage.putExtra("BuildingName", buildingName);
                 //startActivity(pictureSelectPage);
 
-                listAd.addItem();
-                listAd.notifyDataSetChanged();
 
+                Intent takePic = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (mayRequestCamera()) {
+                    Log.v("permission Granted", "good to go");
+                    startActivityForResult(takePic, 0);
+                }
+
+
+                //listAd.addItem();
+                //listAd.notifyDataSetChanged();
+                return true;
+
+            case R.id.addGalOp:
+                Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(pickPhoto, 1);
 
                 return true;
 
@@ -116,8 +137,27 @@ public class pictureSelect extends AppCompatActivity {
         listAd = new ListAdapter(this);
         buildingPics = (ListView) findViewById(R.id.picList);
         buildingPics.setAdapter(listAd);
+    }
 
-
-
+    private boolean mayRequestCamera() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return true;
+        }
+        if (checkSelfPermission(CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        if (shouldShowRequestPermissionRationale(CAMERA)) {
+            Snackbar.make(buildingPics, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
+                    .setAction(android.R.string.ok, new View.OnClickListener() {
+                        @Override
+                        @TargetApi(Build.VERSION_CODES.M)
+                        public void onClick(View v) {
+                            requestPermissions(new String[]{CAMERA}, REQUEST_CAMERA);
+                        }
+                    });
+        } else {
+            requestPermissions(new String[]{CAMERA}, REQUEST_CAMERA);
+        }
+        return false;
     }
 }
