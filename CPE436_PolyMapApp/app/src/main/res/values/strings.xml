@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CPE436_PolyMapApp</string>
+    <string name="app_name">Campus Maps 2.0</string>
     <string name="title_activity_standard_login">Sign in</string>
 
     <!-- Strings related to login -->
