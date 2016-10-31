@@ -26,7 +26,8 @@
         <activity
             android:name=".buildingLandingPage"
             android:label="@string/title_activity_building_landing_page"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".pictureSelect"></activity>
     </application>
 
 </manifest>
