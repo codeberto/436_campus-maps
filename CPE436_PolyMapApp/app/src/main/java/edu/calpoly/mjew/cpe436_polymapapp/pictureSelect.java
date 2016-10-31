@@ -4,11 +4,14 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,7 +22,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -29,56 +31,13 @@ import static android.Manifest.permission.CAMERA;
 public class pictureSelect extends AppCompatActivity {
 
     private static final int REQUEST_CAMERA = 0;
+    private static final int REQUEST_GALLERY = 1;
     String buildingName;
-    ListView buildingPics;
-    ListAdapter listAd;
+    RecyclerView buildingRV;
+    PhotoAdapter photoAd;
 
-    public class ListAdapter extends BaseAdapter{
-        Context privContext;
-        int itemCount;
-        ArrayList<Integer> intList;
-
-        public ListAdapter(Context context){
-            privContext = context;
-            itemCount = 0;
-            intList = new ArrayList<Integer>();
-        }
-
-        @Override
-        public View getView(int pos, View convertView, ViewGroup parent) {
-
-            convertView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.pic_entry, parent, false);
-
-            TextView tv = (TextView)  convertView.findViewById(R.id.picText);
-            tv.setText(Integer.toString(pos));
-
-            Log.v("getView", "inside");
-            itemCount++;
-            return convertView;
-        }
-
-        @Override
-        public int getCount() {
-            return itemCount;
-        }
-
-        @Override
-        public Object getItem(int pos) {
-            return pos;
-        }
-
-        @Override
-        public long getItemId(int i) {
-            return 0;
-        }
-
-        public void addItem(){
-            intList.add(itemCount);
-            notifyDataSetChanged();
-        }
-    }
-
-
+    private ArrayList<String> descList;
+    private ArrayList<Uri> imgList;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
@@ -92,7 +51,7 @@ public class pictureSelect extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch(item.getItemId()){
-            case R.id.addCamOp:
+            case R.id.addCameraOp:
 
                 Log.v("addPicOp", "need to get picture from gallery or camera");
                 //Intent pictureSelectPage = new Intent(getApplicationContext(), pictureSelect.class);
@@ -103,18 +62,14 @@ public class pictureSelect extends AppCompatActivity {
                 Intent takePic = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (mayRequestCamera()) {
                     Log.v("permission Granted", "good to go");
-                    startActivityForResult(takePic, 0);
+                    startActivityForResult(takePic, REQUEST_CAMERA);
                 }
-
-
-                //listAd.addItem();
-                //listAd.notifyDataSetChanged();
                 return true;
 
-            case R.id.addGalOp:
+            case R.id.addGalleryOp:
                 Intent pickPhoto = new Intent(Intent.ACTION_PICK,
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(pickPhoto, 1);
+                startActivityForResult(pickPhoto, REQUEST_GALLERY);
 
                 return true;
 
@@ -122,6 +77,22 @@ public class pictureSelect extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_CAMERA || requestCode == REQUEST_GALLERY) {
+                Log.v("actResult", "received results");
+                descList.add(buildingName);
+                imgList.add(null);
+                photoAd.notifyDataSetChanged();
+            }
+        }
+    }
+
+    // TODO: need to format all pictures to be the same size - then do a wrap content height for .xml
 
 
     @Override
@@ -133,10 +104,23 @@ public class pictureSelect extends AppCompatActivity {
         buildingName = in.getStringExtra("BuildingName");
         this.setTitle(buildingName + "- Photos");
 
-        // TODO: convert to recycleView later on
-        listAd = new ListAdapter(this);
-        buildingPics = (ListView) findViewById(R.id.picList);
-        buildingPics.setAdapter(listAd);
+
+        if(descList == null)
+        {
+            descList = new ArrayList<>();
+        }
+        if(imgList == null)
+        {
+            imgList = new ArrayList<>();
+        }
+
+
+        buildingRV = (RecyclerView) findViewById(R.id.picList);
+        assert buildingRV != null;
+        buildingRV.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+
+        photoAd = new PhotoAdapter(descList, imgList, this);
+        buildingRV.setAdapter(photoAd);
     }
 
     private boolean mayRequestCamera() {
@@ -147,7 +131,7 @@ public class pictureSelect extends AppCompatActivity {
             return true;
         }
         if (shouldShowRequestPermissionRationale(CAMERA)) {
-            Snackbar.make(buildingPics, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(buildingRV, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
                     .setAction(android.R.string.ok, new View.OnClickListener() {
                         @Override
                         @TargetApi(Build.VERSION_CODES.M)

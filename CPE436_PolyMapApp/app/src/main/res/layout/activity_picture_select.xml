@@ -11,12 +11,36 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="edu.calpoly.mjew.cpe436_polymapapp.pictureSelect">
 
-    <ListView
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/picList">
+        android:layout_height="wrap_content"
+        android:id="@+id/submissionHeader">
+
+        <EditText
+            android:layout_width= "0dp"
+            android:layout_height="wrap_content"
+            android:inputType="textShortMessage|textPersonName"
+            android:text="@string/app_name"
+            android:paddingLeft="@dimen/activity_vertical_margin"
+            android:ems="10"
+            android:id="@+id/editTask"
+            android:imeOptions="actionNone"
+            android:layout_weight=".7" />
+
+        <Button
+            android:text="hello"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/submitBtn"
+            android:layout_weight=".3"
+            android:onClick="addTask" />
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/picList"></android.support.v7.widget.RecyclerView>
 
 
-
-    </ListView>
 </LinearLayout>
